@@ -1,0 +1,11 @@
+- Awesome acronym: Awesome Audacious Aiding Audio Application (AAAAA (quinteta/quintala))
+- Datastructuur voor library
+- MP3 uitlezen (recursief)
+- Interface
+
+Datastructuur:
+moet hebben:
+    - mogelijkheid sorteren artiesten
+    - mogelijkheid sorteren albums
+    - mogelijkheid sorteren random? 
+    
