@@ -5,7 +5,7 @@ class song:
     """
     properties = defaultdict()
     fileName = ""
-    def __init__(self, fileNameIn, artist="", album="", title=""):
+    def __init__(self, fileNameIn, artist="Unknown", album="Unknown", title="Unknown"):
         self.fileName = fileNameIn
         self.properties = defaultdict()
         self.properties['artist'] = artist
@@ -41,7 +41,7 @@ class artist:
     def __init__(self, artistName):
         self.artistName = artistName
         self.properties = defaultdict()
-        self.albums = defaultdict(lambda: album(self.lastAddedAlbum, self.artistName)
+        self.albums = defaultdict(lambda: album(self.lastAddedAlbum, self.artistName))
     def setArtist(self, artistName):
         self.artistName = artistName
     def addSong(self, album, song):

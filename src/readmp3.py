@@ -1,22 +1,30 @@
+from mp3objects import *
 import eyeD3
 from mutagen.easyid3 import EasyID3
 import os
 import copy
-from mp3objects import *
-
+# from collections import defaultdict -- Don't know where to place this :( now it is in mp3objects
 class scan:
     """ 
-    Class that can read an mp3 file's tags using ffmpeg (for now let's focus 
-    on artist, album, track number and track name)
+    Class that walks through every directory in a given directory, finding MP3-files
+    and saving their tags in artist, album and song objects.
     """
+    # A tuple of songs
     songs = []
+    # The current artist and album name, needed for automatically creating 
+    # dictionary entries
     currentArtistName = ""
     currentAlbumName = ""
+    # The dictionairies containing all the artists and albums
     albums = defaultdict()
     artists = defaultdict()
-    def __init__():
-        albums = defaultDict(lambda: album(self.currentAlbumName, self.currentArtistName))
-        artists = defaultdict(lambda: artist(self.currentArtistName))
+    def __init__(self):
+        """
+        When initializing, the albums and artists dictionaries are assigned 
+        standard objects.
+        """
+        self.albums = defaultdict(lambda: album(copy.copy(self.currentAlbumName), copy.copy(self.currentArtistName)))
+        self.artists = defaultdict(lambda: artist(copy.copy(self.currentArtistName)))
     def readall(self, directory):
         """
         Read all the mp3 files in a directory and its subdirectory
@@ -27,13 +35,16 @@ class scan:
                 if file.endswith(".mp3"):
                     try:
                         songEle = self.readmp3(direc[0] + "/" + file)
-                        self.currentAlbumName = songEle.properties['album'] 
-                        self.currentArtistName = songEle.properties['artist']
-                        self.songs.append(copy.copy(songEle))
-                        self.albums.append(copy.copy(album(songEle.albumName)))
                     except ValueError:
+                        songEle = song(direc[0] + "/" + file)
                         print "Could not parse " + direc[0] + "/" + file 
                         print "only saving fileName"
+                    self.currentAlbumName = songEle.properties['album'][0] 
+                    self.currentArtistName = songEle.properties['artist'][0]
+                    currentSong = copy.copy(songEle)
+                    self.songs.append(currentSong)
+                    self.albums[self.currentAlbumName].addSong(songEle)
+                    self.artists[self.currentArtistName].albums[self.currentAlbumName] = self.albums[self.currentAlbumName]
         return self.songs
     def readmp3(self, fileName):
         """
@@ -51,5 +62,7 @@ class scan:
 
 a = scan()
 songs = a.readall("/home/maarten/Music/")
-for s in songs:
-   print s.properties['title']
+for ar in a.artists:
+    print a.artists[ar].artistName
+for al in a.albums:
+    print a.albums[al].albumName
