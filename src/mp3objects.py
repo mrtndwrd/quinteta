@@ -25,7 +25,7 @@ class album:
     def __init__(self, albumName, artist="Unknown"):
         self.properties = defaultdict()
         self.albumName = albumName
-        songs = []
+        self.songs = []
 
     def addSong(self, song):
         self.songs.append(song)

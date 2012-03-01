@@ -59,10 +59,30 @@ class scan:
             except KeyError:
                 songElement.setKey(key, "Unknown")
         return songElement
+     def save(self, libraryName="library"):
+        """
+        Save the current knowledge to a file to library.maf (maf files: Maartens
+        Awesome Fyletype) or any provided library name.
+        """
+        f = file(libraryName, 'write')
+        for ar in a.artists:
+            write("Artist:")
+            write(a.artists[ar].artistName)
+            write("Album:")
+            for al in a.artists[ar].albums:
+                write( a.artists[ar].albums[al].albumName)
+                write("songs:")
+                for s in a.artists[ar].albums[al].songs:
+                    write(s.fileName)
 
 a = scan()
 songs = a.readall("/home/maarten/Music/")
 for ar in a.artists:
+    print "Artist:"
     print a.artists[ar].artistName
-for al in a.albums:
-    print a.albums[al].albumName
+    print "Album:"
+    for al in a.artists[ar].albums:
+        print a.artists[ar].albums[al].albumName
+        print "songs:"
+        for s in a.artists[ar].albums[al].songs:
+            print s.fileName
