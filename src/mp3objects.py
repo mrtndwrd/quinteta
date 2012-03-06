@@ -44,7 +44,7 @@ class artist:
         self.albums = defaultdict(lambda: album(self.lastAddedAlbum, self.artistName))
     def setArtist(self, artistName):
         self.artistName = artistName
-    def addSong(self, album, song):
+    def addSong(self, albumName, song):
         self.lastAddedAlbum = albumName
         self.albums[albumName].addSong(song)
 
