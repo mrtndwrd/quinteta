@@ -5,7 +5,7 @@ import os
 import copy
 import codecs
 # from collections import defaultdict -- Don't know where to place this :( now it is in mp3objects
-class scan:
+class Scan:
     """ 
     Class that walks through every directory in a given directory, finding MP3-files
     and saving their tags in artist, album and song objects.
@@ -104,8 +104,10 @@ class scan:
                 self.currentAlbumName = f.readline()[0:-1]
         f.close()
 
-a = scan()
-#songs = a.readall("/home/maarten/Music/")
-#a.save()
-a.load()
-print a.songs[201].properties
+if __name__ == '__main__':
+    a = Scan()
+    #songs = a.readall("/home/maarten/Music/")
+    #a.save()
+    a.load()
+    print "boobies"
+    s.Library.printinfo()
