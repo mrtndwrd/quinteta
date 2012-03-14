@@ -39,89 +39,68 @@ def init():
 
 
 class Library:
+    """ A class that starts a Library window """
     lib = readmp3.Scan()
-    artists = defaultdict()
-    albums = defaultdict()
-    songs = defaultdict()
 
-    def printinfo(self):
-        print "text"
+    def printinfo(self, selected, tiep):
+        #print self.lib.artists[selected.widget.get(5)].artistName
+        if tiep=='tiep':
+            print self.lib.artists[selected.widget.get(map(int, selected.widget.curselection())[0])].artistName
+        #print selected.widget.get(map(int, selected.widget.curselection())[0])
+        #print selected.widget.curselection()
+        #print map(int, selected.widget.curselection())
         return
 
     def __init__(self, lib, master=None):
-        # Set background of toplevel window to match
-        # current style
         self.master = master
-        """
-        style = ttk.Style()
-        theme = style.theme_use()
-        default = style.lookup(theme, 'background')
-        self.master.configure(background=default)
-        """
-        
-        #awesomeButton = Button(self.master, text='Awesomeness', command=self.printinfo)
-        #awesomeButton.grid(row=0, column=0)
+        self.lib = lib
+       
         # Make a listbox for all the artist, to be able to click one
-        self.artistFrame = self.makeListFrame(self.master, lib.artists)
-        self.artistFrame.grid(row=0, column=0)
-        self.albumFrame = self.makeListFrame(self.master, lib.albums)
-        self.albumFrame.grid(row=0, column=1)
-        self.songFrame = self.makeListFrame(self.master, lib.songs)
-        self.songFrame.grid(row=0, column=2)
+        self.songFrame = ListFrame(self.master, None, self.lib.songs, 'songs')
+        self.songFrame.frame.grid(row=0, column=2)
+        self.albumFrame = ListFrame(self.master, self.songFrame, self.lib.albums, 'albums')
+        self.albumFrame.frame.grid(row=0, column=1)
+        self.artistFrame = ListFrame(self.master, self.albumFrame, self.lib.artists, 'artists')
+        self.artistFrame.frame.grid(row=0, column=0)
 
-    def makeListFrame(self, master, input):
-        currentFrame = Frame(master)
-        scrollbar = Scrollbar(currentFrame, orient=VERTICAL)
-        currentList = Listbox(currentFrame, yscrollcommand=scrollbar.set)
+
+
+class ListFrame:
+    """ A class making a frame with interesting information """
+
+    def __init__(self, master, subFrame, input, tiep):
+        self.tiep = tiep
+        self.input = input
+        self.frame = Frame(master)
+        self.subFrame = subFrame
+
+        scrollbar = Scrollbar(self.frame, orient=VERTICAL)
+        self.currentList = Listbox(self.frame, yscrollcommand=scrollbar.set, exportselection=0, selectmode=EXTENDED)
         scrollbar.pack(side=RIGHT, fill=Y)
-        currentList.pack(side=LEFT, fill=BOTH, expand=1)
-        scrollbar.config(command=currentList.yview)
+        self.currentList.pack(side=LEFT, fill=BOTH, expand=1)
+        scrollbar.config(command=self.currentList.yview)
         if isinstance(input, defaultdict):
             for item in sorted(input):
-                currentList.insert(END, item)
+                self.currentList.insert(END, item)
         else:
-            for item in sorted(input):
-                currentList.insert(END, item.properties['title'])
-        return currentFrame
-        #items = map(int, list.curselection())
+            for item in input:
+                self.currentList.insert(END, item.properties['title'])
+        self.currentList.bind("<<ListboxSelect>>", self.callback)
 
-        """
-        Label(self.master, text="Naam:").grid(row=0)
-        self.entryNaam = Entry(self.master)
-        self.entryNaam.grid(row=0, column=1, columnspan=3)
-        
-        Label(self.master, text="Geslacht").grid(row=1)
-        self.g = StringVar()
-        self.Frame1 = Frame(self.master)
-        self.Frame1.grid(row=1, column=1)
-        entryGeslachtM = Radiobutton(self.Frame1, text="Man", variable=self.g, value="m")
-        entryGeslachtV = Radiobutton(self.Frame1, text="Vrouw", variable=self.g, value="v")
-        entryGeslachtM.grid(row=1, column=1)
-        entryGeslachtV.grid(row=1, column=2)
-        
-        Label(self.master, text="Rol").grid(row=2)
-        self.r = StringVar()
-        self.Frame2 = Frame(self.master)
-        self.Frame2.grid(row=2, column=1)
-        entryRolP = Radiobutton(self.Frame2, text="Prins", variable=self.r, value="prins")
-        entryRolK = Radiobutton(self.Frame2, text="Kind", variable=self.r, value="kind")
-        entryRolW = Radiobutton(self.Frame2, text="Bakker", variable=self.r, value="winkelier")
+    def callback(self, selected):
+        if self.tiep == 'artists':
+            self.subFrame.setContent(self.input[selected.widget.get(map(int, selected.widget.curselection())[0])].albums)
+        elif self.tiep == 'albums':
+            self.subFrame.setContent(self.input[selected.widget.get(map(int, selected.widget.curselection())[0])].songs)
 
-        entryRolP.grid(row=2, column=1)
-        entryRolK.grid(row=2, column=2)
-        entryRolW.grid(row=2, column=3)
-
-        Label(self.master, text="Instrument:").grid(row=3)
-        self.entryInstrument = Entry(self.master)
-        self.entryInstrument.grid(row = 3, column = 1, columnspan = 3)
-             
-        self.Button1 = Button (self.master, text="OK", command=self.printinfo)
-        self.Button1.grid(row=4, column=2)
-        """
-
-
-
-
+    def setContent(self, content):
+        self.currentList.delete(0, END)
+        if isinstance(content, defaultdict):
+            for item in sorted(content):
+                self.currentList.insert(END, item)
+        else:
+            for item in content:
+                self.currentList.insert(END, item.properties['title'])
 
 if __name__ == '__main__':
     vp_start_gui()
