@@ -11,9 +11,20 @@ class song:
         self.properties['artist'] = artist
         self.properties['album'] = album
         self.properties['title'] = title
+        self.properties['tracknumber'] = 0
 
     def setKey(self, key, value):
         self.properties[key] = value
+
+    def __cmp__(self, other):
+        ownTrackNumber = int(self.properties['tracknumber'].split('/')[0])
+        otherTrackNumber = int(other.properties['tracknumber'].split('/')[0])
+        if ownTrackNumber < otherTrackNumber:
+            return -1
+        elif ownTrackNumber > otherTrackNumber:
+            return 1
+        else:
+            return 0
 
 class album:
     """

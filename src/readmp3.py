@@ -40,8 +40,8 @@ class Scan:
                         songEle = song(unicode(direc[0] + "/" + file, 'utf-8'))
                         print "Could not parse " + direc[0] + "/" + file 
                         print "only saving fileName"
-                    self.currentAlbumName = songEle.properties['album'][0] 
-                    self.currentArtistName = songEle.properties['artist'][0]
+                    self.currentAlbumName = songEle.properties['album']
+                    self.currentArtistName = songEle.properties['artist']
                     currentSong = copy.copy(songEle)
                     self.songs.append(currentSong)
                     self.albums[self.currentAlbumName].addSong(songEle)
@@ -52,22 +52,22 @@ class Scan:
         Read some mp3file with file name fileName
         """
         tag = EasyID3(fileName)
-        keys = ['artist', 'album']
+        keys = ['artist', 'album', 'tracknumber', 'title']
         songElement = song(fileName)
-        try:
-            songElement.setKey('title', tag['title'][0])
-        except KeyError:
-            tag['title'] = 'Unknown'
+        #try:
+        #    songElement.setKey('title', tag['title'][0])
+        #except KeyError:
+        #    tag['title'] = 'Unknown'
         for key in keys:
             try:
-                songElement.setKey(key, tag[key])
+                songElement.setKey(key, tag[key][0])
             except KeyError:
                 songElement.setKey(key, "Unknown")
         return songElement
     def save(self, libraryName="library"):
         """
         Save the current knowledge to a file to library.maf (maf files: Maartens
-        Awesome Fyletype) or any provided library name.
+        Awesome Filetype) or any provided library name.
         """
         f = codecs.open(libraryName + '.maf', 'w', 'utf-8-sig')
         for ar in self.artists:
@@ -79,7 +79,11 @@ class Scan:
                 f.write("Songs:\n")
                 for s in self.artists[ar].albums[al].songs:
                     f.write(s.fileName + "\n")
-                    f.write(s.properties['title'] + '\n')
+                    f.write("keys:\n")
+                    for key in s.properties:
+                        if key != 'artist' and key != 'album':
+                            f.write(key + "," +  s.properties[key] + '\n')
+                    f.write("endKeys\n")
         f.close()
     def load(self, libraryName='library.maf'):
         f = codecs.open(libraryName, 'r', 'utf-8')
@@ -89,7 +93,16 @@ class Scan:
                 line = f.readline()
                 while True:
                     # For some reason this cannot be called in the while:
-                    songEle = song(line[0:-1], self.currentArtistName, self.currentAlbumName, f.readline()[0:-1])
+                    songEle = song(line[0:-1], self.currentArtistName, self.currentAlbumName)
+                    if(f.readline() == 'keys:\n'):
+                        while True:
+                            line = f.readline()
+                            if(line == 'endKeys\n'):
+                                break
+                            line = line.split(',')
+                            tag = line[0]
+                            value = ''.join(line[1:])[0:-1]
+                            songEle.setKey(tag, value)
                     currentSong = copy.copy(songEle)
                     self.songs.append(currentSong)
                     self.albums[self.currentAlbumName].addSong(songEle)
@@ -110,4 +123,4 @@ if __name__ == '__main__':
     #a.save()
     a.load()
     print "boobies"
-    s.Library.printinfo()
+    #s.Library.printinfo()

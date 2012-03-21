@@ -1,6 +1,12 @@
-import tkMessageBox
+# Needed to call audacious:
+import os
+# Needed to make interfaces:
 from Tkinter import *
+import tkMessageBox
+# Needed to read everything to memory:
 import readmp3
+import mp3objects
+# Needed by readmp3:
 from collections import defaultdict
 
 def vp_start_gui():
@@ -8,7 +14,7 @@ def vp_start_gui():
     global val, library, root
     library = Tk()
     library.title('Library')
-    library.geometry('471x228+1987+257')
+    #library.geometry('471x228+1987+257')
     lib = readmp3.Scan()
     lib.load()
     w_win = Library (lib, library)
@@ -21,7 +27,7 @@ def create_Library (root):
     #    return
     library = Toplevel (root)
     library.title('Library')
-    library.geometry('471x228+1987+257')
+    #library.geometry('471x228+1987+257')
     lib = readmp3.Scan()
     lib.load()
     print 'bladibla'
@@ -54,15 +60,61 @@ class Library:
     def __init__(self, lib, master=None):
         self.master = master
         self.lib = lib
-       
+        self.listFramesFrame = Frame(master)
+        self.listFramesFrame.pack(fill=BOTH)
         # Make a listbox for all the artist, to be able to click one
-        self.songFrame = ListFrame(self.master, None, self.lib.songs, 'songs')
-        self.songFrame.frame.grid(row=0, column=2)
-        self.albumFrame = ListFrame(self.master, self.songFrame, self.lib.albums, 'albums')
-        self.albumFrame.frame.grid(row=0, column=1)
-        self.artistFrame = ListFrame(self.master, self.albumFrame, self.lib.artists, 'artists')
-        self.artistFrame.frame.grid(row=0, column=0)
+        self.songFrame = ListFrame(self.listFramesFrame, None, self.lib.songs, 'songs')
+        self.songFrame.frame.pack(fill=Y, side=RIGHT)
+        self.albumFrame = ListFrame(self.listFramesFrame, self.songFrame, self.lib.albums, 'albums')
+        self.albumFrame.frame.pack(fill=Y, side=RIGHT)
+        self.artistFrame = ListFrame(self.listFramesFrame, self.albumFrame, self.lib.artists, 'artists')
+        self.artistFrame.frame.pack(fill=Y, side=RIGHT)
+        self.buttonFrame = Frame(master)
+        self.buttonFrame.pack(side=RIGHT)
+        self.afterButton = Button(self.buttonFrame, text='Enqueue after', command=self.enqueueAfter)
+        self.afterButton.pack(side=RIGHT)
+        self.insteadButton = Button(self.buttonFrame, text='Enqueue instead', command=self.enqueueInstead)
+        self.insteadButton.pack(side=RIGHT)
 
+    def enqueueAfter(self):
+        self.enqueue('after')
+
+    def enqueueInstead(self):
+        self.enqueue('instead')
+
+
+    def enqueue(self, afterOrInstead):
+        """ Enqueues a file after the current playlist """
+        if self.albumFrame.currentList.curselection() == ():
+            if self.songFrame.currentList.curselection() == ():
+                # Queue all the albums in this artist
+                for album in self.artistFrame.input[self.artistFrame.currentList.get(map(int, self.artistFrame.currentList.curselection())[0])].albums:
+                    enqueueAlbum(album, afterOrInstead)
+        else:
+            # there is a selected album
+            currentAlbum = self.albumFrame.input[self.albumFrame.currentList.get(map(int, self.albumFrame.currentList.curselection())[0])]
+            if self.songFrame.currentList.curselection() == ():
+                # enqueue the entire album
+                self.enqueueAlbum(currentAlbum, afterOrInstead)
+            else:
+                # Enqueue only this song.
+                cmd = 'audacious2 "' 
+                if afterOrInstead == 'after':
+                    cmd += '-e '
+                else:
+                    cmd += '-E '
+                cmd += currentAlbum.songs[map(int, self.songFrame.currentList.curselection())[0]].fileName + '" &'
+                os.system(cmd)
+
+    def enqueueAlbum(self, album, afterOrInstead):
+        cmd = 'audacious2 '
+        if afterOrInstead == 'after':
+            cmd += '-e '
+        else:
+            cmd += '-E '
+        for track in sorted(album.songs):
+            cmd += '"' + track.fileName + '" '
+        os.system(cmd + '&')
 
 
 class ListFrame:
@@ -84,14 +136,14 @@ class ListFrame:
                 self.currentList.insert(END, item)
         else:
             for item in input:
-                self.currentList.insert(END, item.properties['title'])
+                self.currentList.insert(END, "%s. %s" % (item.properties['tracknumber'], item.properties['title']))
         self.currentList.bind("<<ListboxSelect>>", self.callback)
 
     def callback(self, selected):
         if self.tiep == 'artists':
             self.subFrame.setContent(self.input[selected.widget.get(map(int, selected.widget.curselection())[0])].albums)
         elif self.tiep == 'albums':
-            self.subFrame.setContent(self.input[selected.widget.get(map(int, selected.widget.curselection())[0])].songs)
+            self.subFrame.setContent(sorted(self.input[selected.widget.get(map(int, selected.widget.curselection())[0])].songs))
 
     def setContent(self, content):
         self.currentList.delete(0, END)
@@ -100,7 +152,7 @@ class ListFrame:
                 self.currentList.insert(END, item)
         else:
             for item in content:
-                self.currentList.insert(END, item.properties['title'])
+                self.currentList.insert(END, "%s. %s" % (item.properties['tracknumber'], item.properties['title']))
 
 if __name__ == '__main__':
     vp_start_gui()
