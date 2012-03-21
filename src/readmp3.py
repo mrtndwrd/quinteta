@@ -82,7 +82,7 @@ class Scan:
                     f.write("keys:\n")
                     for key in s.properties:
                         if key != 'artist' and key != 'album':
-                            f.write(key + "," +  s.properties[key] + '\n')
+                            f.write(key + "," +  unicode(s.properties[key]) + '\n')
                     f.write("endKeys\n")
         f.close()
     def load(self, libraryName='library.maf'):
@@ -119,8 +119,8 @@ class Scan:
 
 if __name__ == '__main__':
     a = Scan()
-    #songs = a.readall("/home/maarten/Music/")
-    #a.save()
-    a.load()
+    songs = a.readall("/media/VIRUS/music/")
+    a.save()
+    #a.load()
     print "boobies"
     #s.Library.printinfo()

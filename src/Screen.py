@@ -89,7 +89,7 @@ class Library:
             if self.songFrame.currentList.curselection() == ():
                 # Queue all the albums in this artist
                 for album in self.artistFrame.input[self.artistFrame.currentList.get(map(int, self.artistFrame.currentList.curselection())[0])].albums:
-                    enqueueAlbum(album, afterOrInstead)
+                    self.enqueueAlbum(album, afterOrInstead)
         else:
             # there is a selected album
             currentAlbum = self.albumFrame.input[self.albumFrame.currentList.get(map(int, self.albumFrame.currentList.curselection())[0])]
