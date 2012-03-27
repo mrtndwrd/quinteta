@@ -75,8 +75,11 @@ class Library:
         self.afterButton.pack(side=RIGHT)
         self.insteadButton = Button(self.buttonFrame, text='Enqueue instead', command=self.enqueueInstead)
         self.insteadButton.pack(side=RIGHT)
+        self.songFrame.bind("<Double-Button-1>", self.enqueueAfter)
+        self.artistFrame.bind("<Double-Button-1>", self.enqueueAfter)
+        self.albumFrame.bind("<Double-Button-1>", self.enqueueAfter)
 
-    def enqueueAfter(self):
+    def enqueueAfter(self, uselessargument=None):
         self.enqueue('after')
 
     def enqueueInstead(self):
@@ -88,8 +91,9 @@ class Library:
         if self.albumFrame.currentList.curselection() == ():
             if self.songFrame.currentList.curselection() == ():
                 # Queue all the albums in this artist
-                for album in self.artistFrame.input[self.artistFrame.currentList.get(map(int, self.artistFrame.currentList.curselection())[0])].albums:
-                    self.enqueueAlbum(album, afterOrInstead)
+                currentArtist = self.artistFrame.input[self.artistFrame.currentList.get(map(int, self.artistFrame.currentList.curselection())[0])]
+                for album in currentArtist.albums:
+                     self.enqueueAlbum(currentArtist.albums[album], afterOrInstead)
         else:
             # there is a selected album
             currentAlbum = self.albumFrame.input[self.albumFrame.currentList.get(map(int, self.albumFrame.currentList.curselection())[0])]
@@ -98,13 +102,14 @@ class Library:
                 self.enqueueAlbum(currentAlbum, afterOrInstead)
             else:
                 # Enqueue only this song.
-                cmd = 'audacious2 "' 
+                cmd = u'audacious2 ' 
                 if afterOrInstead == 'after':
-                    cmd += '-e '
+                    cmd += '-e "'
                 else:
-                    cmd += '-E '
-                cmd += currentAlbum.songs[map(int, self.songFrame.currentList.curselection())[0]].fileName + '" &'
-                os.system(cmd)
+                    cmd += '-E "'
+                cmd += unicode(currentAlbum.songs[map(int, self.songFrame.currentList.curselection())[0]].fileName + '" &')
+                # System call has to be encoded, because of unicode characters like u'\xe6'
+                os.system(cmdi.encode('utf-8'))
 
     def enqueueAlbum(self, album, afterOrInstead):
         cmd = 'audacious2 '
@@ -114,7 +119,10 @@ class Library:
             cmd += '-E '
         for track in sorted(album.songs):
             cmd += '"' + track.fileName + '" '
-        os.system(cmd + '&')
+        # Make a new console branch:
+        cmd += '&'
+        # System call has to be encoded, because of unicode characters like u'\xe6'
+        os.system(cmd.encode('utf-8'))
 
 
 class ListFrame:
@@ -153,6 +161,10 @@ class ListFrame:
         else:
             for item in content:
                 self.currentList.insert(END, "%s. %s" % (item.properties['tracknumber'], item.properties['title']))
+
+    def bind(self, event, call):
+        self.currentList.bind(event, call)
+        
 
 if __name__ == '__main__':
     vp_start_gui()
