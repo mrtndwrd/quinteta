@@ -1,5 +1,4 @@
 from mp3objects import *
-import eyeD3
 from mutagen.easyid3 import EasyID3
 import os
 import copy
@@ -70,6 +69,7 @@ class Scan:
         Awesome Filetype) or any provided library name.
         """
         f = codecs.open(libraryName + '.maf', 'w', 'utf-8-sig')
+        f.write("for some reason this line is ignored\n")
         for ar in self.artists:
             f.write("Artist:\n")
             f.write(self.artists[ar].artistName + "\n")

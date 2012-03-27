@@ -17,8 +17,15 @@ class song:
         self.properties[key] = value
 
     def __cmp__(self, other):
-        ownTrackNumber = int(self.properties['tracknumber'].split('/')[0])
-        otherTrackNumber = int(other.properties['tracknumber'].split('/')[0])
+        try:
+            ownTrackNumber = int(self.properties['tracknumber'].split('/')[0])
+        except ValueError:
+            ownTrackNumber = self.properties['tracknumber'] = '0'
+        try:
+            otherTrackNumber = int(other.properties['tracknumber'].split('/')[0])
+        except ValueError:
+            otherTrackNumber = other.properties['tracknumber'] = '0'
+
         if ownTrackNumber < otherTrackNumber:
             return -1
         elif ownTrackNumber > otherTrackNumber:

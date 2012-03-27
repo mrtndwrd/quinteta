@@ -2,7 +2,9 @@
 import os
 # Needed to make interfaces:
 from Tkinter import *
-import tkMessageBox
+import tkFileDialog
+# Not sure if needed:
+#import tkMessageBox
 # Needed to read everything to memory:
 import readmp3
 import mp3objects
@@ -20,18 +22,20 @@ def vp_start_gui():
     w_win = Library (lib, library)
     init()
     library.mainloop()
-def create_Library (root):
+def create_Library (root, lib=None):
     '''Starting point when module is imported by another program.'''
     global library, w_win
     #if library: # So we have only one instance of window.
     #    return
-    library = Toplevel (root)
+    if(root == None):
+        library = Tk()
+    else:
+        library = Toplevel (root)
     library.title('Library')
     #library.geometry('471x228+1987+257')
-    lib = readmp3.Scan()
-    lib.load()
-    print 'bladibla'
-    print lib.artists[0]
+    if(lib == None):
+        lib = readmp3.Scan()
+        lib.load()
     w_win = Library (lib, library)
     init()
     return w_win
@@ -49,6 +53,7 @@ class Library:
     lib = readmp3.Scan()
 
     def printinfo(self, selected, tiep):
+        """ This is a test case that should not be taken seriously """
         #print self.lib.artists[selected.widget.get(5)].artistName
         if tiep=='tiep':
             print self.lib.artists[selected.widget.get(map(int, selected.widget.curselection())[0])].artistName
@@ -58,8 +63,26 @@ class Library:
         return
 
     def __init__(self, lib, master=None):
+        """ Init needs a lib to start on. This is a Scan() object from 
+        readmp3.py, containing the library 
+        """
         self.master = master
         self.lib = lib
+        # This will be the frame for adding a new library
+        self.libraryFrame = Frame(master)
+        self.libraryFrame.pack()
+        self.libDirectoryLabel = Label(self.libraryFrame)
+        self.libDirectoryLabel['text'] = 'Library directory: '
+        self.libDirectoryLabel.pack(side=LEFT)
+        self.libDirectoryEntry = Entry(self.libraryFrame)
+        self.libDirectoryEntry.pack(fill=X, side=LEFT)
+        self.libDirectoryButton = Button(self.libraryFrame, text="Browse", command=self.browseLibrary)
+        self.libDirectoryButton.pack(side=LEFT)
+        self.libScanButton = Button(self.libraryFrame, text='Scan Directory', command=self.scanLibrary)
+        self.libScanButton.pack(side=LEFT)
+        self.libSaveButton = Button(self.libraryFrame, text='Save Library', command=self.saveLibrary)
+        self.libSaveButton.pack(side=LEFT)
+        # This will be the frame containing all the listFrames
         self.listFramesFrame = Frame(master)
         self.listFramesFrame.pack(fill=BOTH)
         # Make a listbox for all the artist, to be able to click one
@@ -78,6 +101,29 @@ class Library:
         self.songFrame.bind("<Double-Button-1>", self.enqueueAfter)
         self.artistFrame.bind("<Double-Button-1>", self.enqueueAfter)
         self.albumFrame.bind("<Double-Button-1>", self.enqueueAfter)
+
+    def browseLibrary(self):
+        """ Opens a browser window to select the current Library directory """
+        options = {}
+        options['mustexist'] = True
+        options['parent'] = self.master
+        options['title'] = 'Choose library directory'
+        self.libDirectoryEntry.insert(0, tkFileDialog.askdirectory(**options))
+        print self.libDirectoryEntry.get()
+
+    def saveLibrary(self):
+        """ Saves the current library to library.maf """
+        self.lib.save()
+        pass
+
+    def scanLibrary(self):
+        """ Scans the directory selected in the entry box """
+        # TODO: Remove this print statement after testing phase is over
+        print 'scanning ' +  self.libDirectoryEntry.get()
+        self.lib = readmp3.Scan()
+        self.lib.readall(self.libDirectoryEntry.get())
+        destroy_Library()
+        create_Library(None, self.lib)
 
     def enqueueAfter(self, uselessargument=None):
         self.enqueue('after')
@@ -109,7 +155,7 @@ class Library:
                     cmd += '-E "'
                 cmd += unicode(currentAlbum.songs[map(int, self.songFrame.currentList.curselection())[0]].fileName + '" &')
                 # System call has to be encoded, because of unicode characters like u'\xe6'
-                os.system(cmdi.encode('utf-8'))
+                os.system(cmd.encode('utf-8'))
 
     def enqueueAlbum(self, album, afterOrInstead):
         cmd = 'audacious2 '
