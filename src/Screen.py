@@ -66,17 +66,17 @@ class Library:
     def find(self, type=None, nothing=None, pythonVar=None):
         artistContent = defaultdict()
         for item in self.artistFrame.input:
-            if self.artistFrame.input[item].artistName.find(self.findEntry.get()) >= 0:
+            if self.artistFrame.input[item].artistName.lower().find(self.findEntry.get().lower()) >= 0:
                 artistContent[item] = self.artistFrame.input[item]
         self.artistFrame.setContent(artistContent)
         albumContent = defaultdict()
         for item in self.albumFrame.input:
-            if self.albumFrame.input[item].albumName.find(self.findEntry.get()) >= 0:
+            if self.albumFrame.input[item].albumName.lower().find(self.findEntry.get().lower()) >= 0:
                 albumContent[item] = self.albumFrame.input[item]
         self.albumFrame.setContent(albumContent)
         songContent = []
         for item in self.songFrame.input:
-            if item.properties['title'].find(self.findEntry.get()) >= 0:
+            if item.properties['title'].lower().find(self.findEntry.get().lower()) >= 0:
                 songContent.append(item)
         self.songFrame.setContent(songContent)
 
