@@ -181,7 +181,7 @@ class ListFrame:
         self.subFrame = subFrame
 
         scrollbar = Scrollbar(self.frame, orient=VERTICAL)
-        self.currentList = Listbox(self.frame, yscrollcommand=scrollbar.set, exportselection=0, selectmode=EXTENDED)
+        self.currentList = Listbox(self.frame, yscrollcommand=scrollbar.set, exportselection=0, selectmode=EXTENDED, height=30)
         scrollbar.pack(side=RIGHT, fill=Y)
         self.currentList.pack(side=LEFT, fill=BOTH, expand=1)
         scrollbar.config(command=self.currentList.yview)

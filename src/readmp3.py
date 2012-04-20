@@ -53,10 +53,6 @@ class Scan:
         tag = EasyID3(fileName)
         keys = ['artist', 'album', 'tracknumber', 'title']
         songElement = song(fileName)
-        #try:
-        #    songElement.setKey('title', tag['title'][0])
-        #except KeyError:
-        #    tag['title'] = 'Unknown'
         for key in keys:
             try:
                 songElement.setKey(key, tag[key][0])
