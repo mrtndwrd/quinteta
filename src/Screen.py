@@ -84,7 +84,7 @@ class Library:
         self.libSaveButton.pack(side=LEFT)
         # This will be the frame containing all the listFrames
         self.listFramesFrame = Frame(master)
-        self.listFramesFrame.pack(fill=BOTH)
+        self.listFramesFrame.pack(fill=BOTH, expand=True)
         # Make a listbox for all the artist, to be able to click one
         self.songFrame = ListFrame(self.listFramesFrame, None, self.lib.songs, 'songs')
         self.songFrame.frame.pack(fill=Y, side=RIGHT)
@@ -178,12 +178,13 @@ class ListFrame:
         self.tiep = tiep
         self.input = input
         self.frame = Frame(master)
+        self.frame.pack(fill=BOTH, expand=1)
         self.subFrame = subFrame
 
         scrollbar = Scrollbar(self.frame, orient=VERTICAL)
-        self.currentList = Listbox(self.frame, yscrollcommand=scrollbar.set, exportselection=0, selectmode=EXTENDED, height=30)
+        self.currentList = Listbox(self.frame, yscrollcommand=scrollbar.set, exportselection=0, selectmode=EXTENDED)
         scrollbar.pack(side=RIGHT, fill=Y)
-        self.currentList.pack(side=LEFT, fill=BOTH, expand=1)
+        self.currentList.pack(side=LEFT, fill=BOTH, expand=True)
         scrollbar.config(command=self.currentList.yview)
         if isinstance(input, defaultdict):
             for item in sorted(input):
