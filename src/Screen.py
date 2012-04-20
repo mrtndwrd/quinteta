@@ -163,7 +163,7 @@ class Library:
 
 
     def enqueue(self, afterOrInstead):
-        """ Enqueues a file after the current playlist """
+        """ Enqueues a or more  file(s) after the current playlist """
         if self.albumFrame.currentList.curselection() == ():
             if self.songFrame.currentList.curselection() == ():
                 # Queue all the albums in this artist
@@ -183,7 +183,7 @@ class Library:
                     cmd += '-e "'
                 else:
                     cmd += '-E "'
-                cmd += unicode(currentAlbum.songs[map(int, self.songFrame.currentList.curselection())[0]].fileName + '" &')
+                cmd += unicode(sorted(currentAlbum.songs)[map(int, self.songFrame.currentList.curselection())[0]].fileName + '" &')
                 # System call has to be encoded, because of unicode characters like u'\xe6'
                 os.system(cmd.encode('utf-8'))
 
