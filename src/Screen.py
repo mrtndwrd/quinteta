@@ -62,6 +62,24 @@ class Library:
         #print map(int, selected.widget.curselection())
         return
 
+    # For some reason the trace gives useless arguments...
+    def find(self, type=None, nothing=None, pythonVar=None):
+        artistContent = defaultdict()
+        for item in self.artistFrame.input:
+            if self.artistFrame.input[item].artistName.find(self.findEntry.get()) >= 0:
+                artistContent[item] = self.artistFrame.input[item]
+        self.artistFrame.setContent(artistContent)
+        albumContent = defaultdict()
+        for item in self.albumFrame.input:
+            if self.albumFrame.input[item].albumName.find(self.findEntry.get()) >= 0:
+                albumContent[item] = self.albumFrame.input[item]
+        self.albumFrame.setContent(albumContent)
+        songContent = []
+        for item in self.songFrame.input:
+            if item.properties['title'].find(self.findEntry.get()) >= 0:
+                songContent.append(item)
+        self.songFrame.setContent(songContent)
+
     def __init__(self, lib, master=None):
         """ Init needs a lib to start on. This is a Scan() object from 
         readmp3.py, containing the library 
@@ -82,6 +100,15 @@ class Library:
         self.libScanButton.pack(side=LEFT)
         self.libSaveButton = Button(self.libraryFrame, text='Save Library', command=self.saveLibrary)
         self.libSaveButton.pack(side=LEFT)
+        # A search box is needed: (according to SOME people)
+        self.findFrame = Frame(master)
+        self.findFrame.pack()
+        self.findString = StringVar()
+        self.findString.trace('w', self.find)
+        self.findEntry = Entry(self.findFrame, textvariable=self.findString)
+        self.findEntry.pack(fill=X, side=LEFT)
+        self.findButton = Button(self.findFrame, text="Find", command=self.find)
+        self.findButton.pack(side=LEFT)
         # This will be the frame containing all the listFrames
         self.listFramesFrame = Frame(master)
         self.listFramesFrame.pack(fill=BOTH, expand=True)
