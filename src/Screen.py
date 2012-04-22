@@ -66,6 +66,7 @@ class Library:
         return
 
     # For some reason the trace gives useless arguments...
+    # Don't use the varibles!
     def find(self, type=None, nothing=None, pythonVar=None):
         artistContent = defaultdict()
         for item in self.artistFrame.input:
@@ -82,6 +83,9 @@ class Library:
             if item.properties['title'].lower().find(self.findEntry.get().lower()) >= 0:
                 songContent.append(item)
         self.songFrame.setContent(songContent)
+
+    def clear(self):
+        self.findString.set('')
 
     def __init__(self, lib, master=None):
         """ Init needs a lib to start on. This is a Scan() object from 
@@ -126,8 +130,10 @@ class Library:
         self.findString.trace('w', self.find)
         self.findEntry = Entry(self.buttonFrame, textvariable=self.findString)
         self.findEntry.pack(fill=X, side=RIGHT)
-        self.findButton = Button(self.buttonFrame, text="Find", command=self.find)
-        self.findButton.pack(side=RIGHT)
+        self.findLabel= Label(self.buttonFrame, text='Find: ')
+        self.findLabel.pack(side=RIGHT)
+        self.findClearButton = Button(self.buttonFrame, text='Clear', command=self.clear)
+        self.findClearButton.pack(side=RIGHT)
         self.songFrame.bind("<Double-Button-1>", self.enqueueAfter)
         self.artistFrame.bind("<Double-Button-1>", self.enqueueAfter)
         self.albumFrame.bind("<Double-Button-1>", self.enqueueAfter)
@@ -163,29 +169,29 @@ class Library:
 
 
     def enqueue(self, afterOrInstead):
-        """ Enqueues a or more  file(s) after the current playlist """
-        if self.albumFrame.currentList.curselection() == ():
-            if self.songFrame.currentList.curselection() == ():
-                # Queue all the albums in this artist
-                currentArtist = self.artistFrame.input[self.artistFrame.currentList.get(map(int, self.artistFrame.currentList.curselection())[0])]
-                for album in currentArtist.albums:
-                     self.enqueueAlbum(currentArtist.albums[album], afterOrInstead)
-        else:
-            # there is a selected album
-            currentAlbum = self.albumFrame.input[self.albumFrame.currentList.get(map(int, self.albumFrame.currentList.curselection())[0])]
-            if self.songFrame.currentList.curselection() == ():
-                # enqueue the entire album
-                self.enqueueAlbum(currentAlbum, afterOrInstead)
+        """ Enqueues a or more file(s) after the current playlist """
+        if self.songFrame.currentList.curselection() != ():
+            # Enqueue only this song.
+            cmd = u'audacious2 ' 
+            if afterOrInstead == 'after':
+                cmd += '-e "'
             else:
-                # Enqueue only this song.
-                cmd = u'audacious2 ' 
-                if afterOrInstead == 'after':
-                    cmd += '-e "'
-                else:
-                    cmd += '-E "'
-                cmd += unicode(sorted(currentAlbum.songs)[map(int, self.songFrame.currentList.curselection())[0]].fileName + '" &')
-                # System call has to be encoded, because of unicode characters like u'\xe6'
-                os.system(cmd.encode('utf-8'))
+                cmd += '-E "'
+            # cmd += unicode(sorted(currentAlbum.songs)[map(int, self.songFrame.currentList.curselection())[0]].fileName + '" &')
+            cmd += unicode(self.songFrame.currentContent[map(int, self.songFrame.currentList.curselection())[0]].fileName + '" &')
+            print cmd
+            # System call has to be encoded, because of unicode characters like u'\xe6'
+            os.system(cmd.encode('utf-8'))
+        elif self.albumFrame.currentList.curselection() != ():
+            # there is a selected album
+            currentAlbum = self.albumFrame.currentContent[self.albumFrame.currentList.get(map(int, self.albumFrame.currentList.curselection())[0])]
+            # enqueue the entire album
+            self.enqueueAlbum(currentAlbum, afterOrInstead)
+        elif self.artistFrame.currentList.curselection() != ():
+            # Queue all the albums in this artist
+            currentArtist = self.artistFrame.input[self.artistFrame.currentList.get(map(int, self.artistFrame.currentList.curselection())[0])]
+            for album in currentArtist.albums:
+                self.enqueueAlbum(currentArtist.albums[album], afterOrInstead)
 
     def enqueueAlbum(self, album, afterOrInstead):
         cmd = 'audacious2 '
@@ -210,6 +216,8 @@ class ListFrame:
         self.frame = Frame(master)
         self.frame.pack(fill=BOTH, expand=1)
         self.subFrame = subFrame
+        # Variable that holds the objects currently in the list
+        self.currentContent = input
 
         scrollbar = Scrollbar(self.frame, orient=VERTICAL)
         self.currentList = Listbox(self.frame, yscrollcommand=scrollbar.set, exportselection=0, selectmode=EXTENDED)
@@ -236,6 +244,7 @@ class ListFrame:
             for item in sorted(content):
                 self.currentList.insert(END, item)
         else:
+            self.currentContent = content
             for item in content:
                 self.currentList.insert(END, "%s. %s" % (item.properties['tracknumber'], item.properties['title']))
 
